@@ -123,6 +123,42 @@ nav button:not([aria-selected="true"]):hover { background: var(--accent-soft); c
 .legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
 .legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -1px; margin-right: 6px; }
 
+
+/* Memory aids */
+.aid { display: grid; gap: 14px; border-top: 1px dashed var(--line); padding-top: 16px; }
+.aid-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.aid h3, .trick h3 { font-family: var(--display); font-size: 1rem; margin: 0; }
+.linkbtn { border: 0; background: none; color: var(--accent); font: 600 0.88rem var(--body); cursor: pointer; padding: 2px 0; text-decoration: underline; text-underline-offset: 3px; justify-self: start; }
+.pegs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.peg { border: 1px solid var(--line); border-radius: 10px; padding: 8px 6px; text-align: center; display: grid; gap: 2px; min-width: 0; }
+.peg .dg { font: 600 1.15rem var(--mono); color: var(--accent); }
+.peg .w { font-weight: 600; overflow-wrap: anywhere; }
+.peg .snd { font: 0.72rem var(--mono); color: var(--muted); }
+.story { background: var(--accent-soft); border-radius: 10px; padding: 12px 14px; display: grid; gap: 4px; }
+.story small, .mine label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+.story p { margin: 0; font-size: 1rem; }
+.story b { color: var(--accent); }
+.mine { display: grid; gap: 6px; }
+.mine input, .mine textarea { font: 0.95rem var(--body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); width: 100%; resize: vertical; }
+.mine textarea { margin-bottom: 0; }
+.mine input:focus-visible, .mine textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.hintword { font: 600 1.3rem var(--display); color: var(--accent); }
+.trick { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 14px; }
+.trick p { margin: 0; max-width: 64ch; }
+.code-wrap { overflow-x: auto; }
+.code { border-collapse: collapse; font-size: 0.92rem; width: 100%; }
+.code th { text-align: left; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); padding: 6px 10px; border-bottom: 1px solid var(--line); }
+.code td { padding: 6px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.code td:first-child { font: 600 1.1rem var(--mono); color: var(--accent); }
+.code td:nth-child(2) { font-family: var(--mono); white-space: nowrap; }
+.poem { display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.poem span { display: grid; text-align: center; }
+.poem i { font-style: normal; }
+.poem b { font: 600 1.1rem var(--mono); color: var(--accent); }
+.peglist { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 4px 12px; font-size: 0.9rem; }
+.peglist span b { font-family: var(--mono); color: var(--accent); margin-right: 6px; }
+@media (max-width: 480px) { .pegs { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
 @media (max-width: 480px) {
   .panel { padding: 16px; }
   .stat b { font-size: 1.1rem; }
@@ -154,6 +190,7 @@ nav button:not([aria-selected="true"]):hover { background: var(--accent-soft); c
 
   <nav role="tablist">
     <button role="tab" id="tab-learn" aria-selected="true" data-view="learn">Learn</button>
+    <button role="tab" id="tab-tricks" aria-selected="false" data-view="tricks">Tricks</button>
     <button role="tab" id="tab-recite" aria-selected="false" data-view="recite">Recite</button>
     <button role="tab" id="tab-ref" aria-selected="false" data-view="ref">All digits</button>
   </nav>
@@ -169,13 +206,70 @@ nav button:not([aria-selected="true"]):hover { background: var(--accent-soft); c
       </div>
     </div>
     <div class="chunk" id="chunk" aria-live="polite"></div>
+    <div class="aid" id="aid">
+      <div class="aid-head">
+        <h3>Turn it into pictures</h3>
+        <button class="linkbtn" data-goto="tricks">How does this work?</button>
+      </div>
+      <div class="pegs" id="pegs"></div>
+      <div class="story">
+        <small>Suggested scene</small>
+        <p id="storyTxt"></p>
+        <button class="linkbtn" id="storyShuffle">Try another scene</button>
+      </div>
+      <div class="mine">
+        <label for="placeInput">Where in your memory palace?</label>
+        <input id="placeInput" type="text" placeholder="e.g. Front door">
+        <label for="storyInput">Your own scene (the weirder, the better)</label>
+        <textarea id="storyInput" rows="2" placeholder="Write the picture you'll actually see in your head"></textarea>
+      </div>
+    </div>
     <div class="status" id="learnStatus"></div>
     <div class="row">
       <button class="btn primary" id="learnAction">Hide and test me</button>
-      <button class="btn" id="learnPeek" hidden>Peek</button>
+      <button class="btn" id="learnPeek" hidden>Hint: show the word</button>
       <label class="toggle"><input type="checkbox" id="chainMode" checked> Also recite the chunk before</label>
     </div>
     <p class="tip" id="learnTip"></p>
+  </section>
+
+  <!-- TRICKS -->
+  <section class="panel" id="view-tricks" hidden>
+    <h2>Memory tricks that work</h2>
+    <p class="hint">Your brain is bad at storing random numbers but very good at storing pictures, places and stories. Each trick below converts digits into something your brain already likes.</p>
+
+    <article class="trick">
+      <h3>1. The word code (Major System)</h3>
+      <p>Think of it like Morse code: each digit gets one consonant sound. Vowels are free filler, so you can turn any pair of digits into a word you can picture. <b>14</b> is t + r, which becomes <b>tire</b>. <b>15</b> is t + l, which becomes <b>towel</b>.</p>
+      <p>Learn these ten sounds once and you can decode every word in the app:</p>
+      <div class="code-wrap"><table class="code">
+        <thead><tr><th>Digit</th><th>Sound</th><th>Why it fits</th></tr></thead>
+        <tbody id="soundTable"></tbody>
+      </table></div>
+    </article>
+
+    <article class="trick">
+      <h3>2. The memory palace</h3>
+      <p>Picture walking through your home. Like leaving sticky notes in each room, you drop one chunk's scene at each spot: front door, hallway, sofa, kitchen sink… To recite, you walk the route in your head and look at what you left there. Use the "Where in your memory palace?" box on each chunk to fix its spot.</p>
+      <p>The route keeps the order for you, which is the hardest part of remembering pi.</p>
+    </article>
+
+    <article class="trick">
+      <h3>3. The pi poem</h3>
+      <p>Count the letters in each word. They give the first 15 digits.</p>
+      <div class="poem" id="poem"></div>
+    </article>
+
+    <article class="trick">
+      <h3>4. Phone-number chunks</h3>
+      <p>You remember phone numbers as 3‑3‑4 groups, not ten loose digits. Every chunk in the app is split the same way, and saying it out loud gives it a rhythm, like a jingle.</p>
+    </article>
+
+    <article class="trick">
+      <h3>Every word from 00 to 99</h3>
+      <p class="hint">These are the pictures used in the Learn tab. Swap any of them in your head for a word that means more to you.</p>
+      <div class="peglist" id="pegList"></div>
+    </article>
   </section>
 
   <!-- RECITE -->
@@ -237,6 +331,62 @@ const TIPS = [
   "<b>Look for landmarks.</b> At decimal 762 there are six 9s in a row, the famous Feynman point. Patterns like that are free anchors.",
 ];
 
+
+const PEGS = ("sauce suit sun sumo zero seal sash sock sofa soap " +
+  "dice toad tuna tomb tire towel dish duck dove tuba " +
+  "nose net nun gnome Nero nail notch neck knife knob " +
+  "mouse mat moon mummy mower mule match mug movie map " +
+  "rose rat rain ram rower roll roach rock roof rope " +
+  "lace light lion lime lorry lily leash log lava lip " +
+  "cheese sheet chain jam chair jelly judge chalk chef ship " +
+  "case cat coin comb car coal cage cake cave cap " +
+  "face foot fan foam fire file fish fog fife FBI-agent " +
+  "bus bat bone bomb bear bell beach book beef baby").split(" ").map(w => w.replace("-", " "));
+const SOUNDS = [
+  ["s, z", "Z is the first sound of zero."],
+  ["t, d", "T and d have one downstroke."],
+  ["n", "N has two legs."],
+  ["m", "M has three legs."],
+  ["r", "R is the last sound of four."],
+  ["l", "L is 50 in Roman numerals, and your hand makes an L with five fingers."],
+  ["j, sh, ch", "A J flipped around looks like a 6."],
+  ["k, hard g", "Two 7s back to back make a K."],
+  ["f, v", "A handwritten f has two loops, like an 8."],
+  ["p, b", "P is a 9 flipped around."],
+];
+const LETTER = ["s","t","n","m","r","l","j","k","f","p"];
+const SCENES = [
+  w => `${cap(w[0])} the size of a house rolls into ${w[1]}. Inside it you find ${w[2]} stuck to ${w[3]}, and ${w[4]} grabs them both.`,
+  w => `You open the door and ${w[0]} is wearing ${w[1]}. It hands you ${w[2]}, you swap it for ${w[3]}, and ${w[4]} laughs at you.`,
+  w => `${cap(w[0])} crashes into ${w[1]}, which flips onto ${w[2]}. Out jumps ${w[3]} riding ${w[4]}.`,
+  w => `${cap(w[0])} and ${w[1]} are dancing on ${w[2]}. Suddenly ${w[3]} falls from the sky and lands on ${w[4]}.`,
+];
+const art = w => (/^[aeiou]|^FBI/i.test(w) ? "an " : "a ") + `<b>${w}</b>`;
+const cap = t => t.replace(/^a/, "A");
+const pegOf = pair => PEGS[parseInt(pair, 10)];
+let sceneShift = 0;
+
+function renderAid(d) {
+  const pairs = d.match(/../g);
+  $("pegs").innerHTML = pairs.map(p => `<div class="peg"><span class="dg">${p}</span><span class="w">${pegOf(p)}</span><span class="snd">${LETTER[p[0]]}·${LETTER[p[1]]}</span></div>`).join("");
+  const words = pairs.map(p => art(pegOf(p)));
+  $("storyTxt").innerHTML = SCENES[(chunkIdx + sceneShift) % SCENES.length](words);
+  $("placeInput").value = store.get("place" + chunkIdx, "");
+  $("storyInput").value = store.get("story" + chunkIdx, "");
+}
+$("storyShuffle").onclick = () => { sceneShift++; renderAid(chunkDigits(chunkIdx)); };
+$("placeInput").addEventListener("input", e => store.set("place" + chunkIdx, e.target.value));
+$("storyInput").addEventListener("input", e => store.set("story" + chunkIdx, e.target.value));
+for (const el of [$("placeInput"), $("storyInput")]) el.addEventListener("keydown", e => e.stopPropagation());
+
+function renderTricks() {
+  $("soundTable").innerHTML = SOUNDS.map((s, i) => `<tr><td>${i}</td><td>${s[0]}</td><td>${s[1]}</td></tr>`).join("");
+  const poem = "How I want a drink, alcoholic of course, after the heavy lectures involving quantum mechanics".split(" ");
+  $("poem").innerHTML = poem.map(w => `<span><i>${w}</i><b>${w.replace(/[^a-z]/gi, "").length}</b></span>`).join("");
+  $("pegList").innerHTML = PEGS.map((w, i) => `<span><b>${String(i).padStart(2, "0")}</b>${w}</span>`).join("");
+}
+document.querySelectorAll("[data-goto]").forEach(b => b.onclick = () => setView(b.dataset.goto));
+
 const groups = s => [s.slice(0,3), s.slice(3,6), s.slice(6)].filter(Boolean);
 const totalChunks = () => Math.ceil(goal / 10);
 
@@ -277,6 +427,8 @@ function renderLearn() {
     const ctx = chunkIdx === 0 ? `<span class="ctx">3.</span> ` : `<span class="ctx">…${chunkDigits(chunkIdx - 1).slice(-4)}</span> `;
     el.innerHTML = ctx + groups(d).map(g => `<span class="grp">${g}</span>`).join("");
     $("learnAction").textContent = "Hide and test me";
+    $("aid").hidden = false;
+    renderAid(d);
     $("learnPeek").hidden = true;
     $("keypad").hidden = true;
   } else {
@@ -298,6 +450,7 @@ function renderLearn() {
     });
     el.innerHTML = html;
     $("learnAction").textContent = "Show digits";
+    $("aid").hidden = true;
     $("learnPeek").hidden = false;
     $("keypad").hidden = false;
   }
@@ -309,7 +462,7 @@ function learnKey(k) {
   if (k !== target[pos]) {
     typed += k;
     renderLearn();
-    setStatus("learnStatus", `Not quite. Decimal ${chunkIdx * 10 + 1 + pos - prefixLen} is ${target[pos]}. Try the chunk again.`, "bad");
+    setStatus("learnStatus", `Not quite. Decimal ${chunkIdx * 10 + 1 + pos - prefixLen} is ${target[pos]}. Remember ${pegOf(target.slice(Math.floor(pos/2)*2, Math.floor(pos/2)*2+2))} = ${target.slice(Math.floor(pos/2)*2, Math.floor(pos/2)*2+2)}. Try again.`, "bad");
     setTimeout(() => { typed = ""; renderLearn(); }, 1200);
     return;
   }
@@ -337,7 +490,10 @@ $("learnAction").onclick = () => {
 };
 $("learnPeek").onclick = () => {
   const pos = typed.length;
-  if (pos < target.length) setStatus("learnStatus", `Next digit: ${target[pos]}`, "");
+  if (pos >= target.length) return;
+  const start = Math.floor(pos / 2) * 2;
+  const pair = target.slice(start, start + 2);
+  setStatus("learnStatus", `Think of the picture: ${pegOf(pair)}. Which two digits make that word?`, "");
 };
 $("prevChunk").onclick = () => { chunkIdx--; learnState = "study"; typed = ""; setStatus("learnStatus", ""); renderLearn(); };
 $("nextChunk").onclick = () => { chunkIdx++; learnState = "study"; typed = ""; setStatus("learnStatus", ""); renderLearn(); };
@@ -380,7 +536,8 @@ function reciteKey(k) {
     over = true;
     setStatus("reciteStatus", `Stopped at decimal ${pos + 1}: it's ${PI[pos]}, you typed ${k}. You got ${pos} right.`, "bad");
   } else if (!ok) {
-    setStatus("reciteStatus", `Decimal ${pos + 1} is ${PI[pos]}. Keep going.`, "bad");
+    { const st = Math.floor(pos / 2) * 2, pr = PI.slice(st, st + 2);
+    setStatus("reciteStatus", `Decimal ${pos + 1} is ${PI[pos]} (the ${pegOf(pr)}, ${pr}). Keep going.`, "bad"); }
   } else if (run.length === goal && mistakes === 0) {
     setStatus("reciteStatus", `You hit your goal of ${goal} with no mistakes. Raise the goal when you're ready.`, "good");
   } else if (run.length >= 1000) {
@@ -414,6 +571,8 @@ function setView(v) {
   $("view-learn").hidden = v !== "learn";
   $("view-recite").hidden = v !== "recite";
   $("view-ref").hidden = v !== "ref";
+  $("view-tricks").hidden = v !== "tricks";
+  if (v === "tricks") renderTricks();
   $("keypad").hidden = !(v === "recite" || (v === "learn" && learnState === "test"));
   if (v === "learn") renderLearn();
   if (v === "recite") renderTape();
